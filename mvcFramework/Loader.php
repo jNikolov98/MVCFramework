@@ -19,6 +19,27 @@ namespace MVC {
             self::loadClass($class);
         }
 
+        public function loadClass($class)
+        {
+            foreach (self::$namespaces as $k => $v)
+            {
+                if(strpos($class, $k) === 0)
+                {
+                    $file = realpath(substr_replace(str_replace('\\', DIRECTORY_SEPARATOR, $class), $v, 0, strlen($k)).'.php');
+                    if ($file && is_readable($file))
+                    {
+                        include $file;
+                    }
+                    else
+                    {
+                        //TODO:: #5 9.34
+                        throw new \Exception('File cannot be included: '. $file);
+                    }
+                    break;
+                }
+            }
+        }
+
         public static function registerNamespace($namespace, $path)
         {
             $namespace = trim($namespace);
@@ -31,7 +52,7 @@ namespace MVC {
                 $_path = realpath($path);
                 if($_path && is_dir($_path) && is_readable($_path))
                 {
-                    self::$namespaces[$namespace] = $_path . DIRECTORY_SEPARATOR;
+                    self::$namespaces[$namespace.'\\'] = $_path . DIRECTORY_SEPARATOR;
                 } else
                 {
                     // TODO:: #4
@@ -42,6 +63,21 @@ namespace MVC {
                 // TODO::#4 - 3min
                 throw new \Exception('Invalid namespace:' . $namespace);
             }
+        }
+
+        public static function getNamespaces()
+        {
+            return self::$namespaces;
+        }
+
+        public static function removeNamespace($namespace)
+        {
+            unset(self::$namespaces[$namespace]);
+        }
+
+        public  static function clearNamespaces()
+        {
+            self::$namespaces = array();
         }
     }
 }
