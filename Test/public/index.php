@@ -4,5 +4,5 @@ include "../../mvcFramework/App.php";
 
 $app = \MVC\App::getInstance();
 
-echo $app->getConfig()->app;
+
 $app->run();
