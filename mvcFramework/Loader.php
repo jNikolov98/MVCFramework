@@ -65,6 +65,17 @@ namespace MVC {
             }
         }
 
+        public static function registerNamespaces($array)
+        {
+            if(is_array($array)){
+                foreach ($array as $k =>$v) {
+                    self::registerNamespace($k, $v);
+                }
+            } else {
+                throw new \Exception('Invalid namespaces');
+            }
+        }
+
         public static function getNamespaces()
         {
             return self::$namespaces;

@@ -33,7 +33,7 @@ class Config
             $ns = $this->app['namespaces'];
             if(is_array($ns))
             {
-                \MVC\Loader::registerNamespace($ns);
+                \MVC\Loader::registerNamespaces($ns);
             }
         } else {
             throw new \Exception('Config directory read error: '.$configFolder);

@@ -7,6 +7,7 @@ namespace MVC
     {
         private static $_instance = null;
         private $_config = null;
+        private $router = null;
 
         private $_frontController = null;
 
@@ -31,6 +32,18 @@ namespace MVC
             return $this->_config->getConfigFolder();
         }
 
+
+        public function getRouter()
+        {
+            return $this->router;
+        }
+
+
+        public function setRouter($router)
+        {
+            $this->router = $router;
+        }
+
         /**
          * @return Config|null
          */
@@ -46,6 +59,23 @@ namespace MVC
                 $this->setConfigFolder('../config');
             }
             $this->_frontController = \MVC\FrontController::getInstance();
+            if ($this->router instanceof \MVC\Routers\IRouter)
+            {
+                $this->_frontController->setRouter($this->router);
+            }else if($this->router == 'JsonRPCRouter'){
+                /**
+                 * TODO:: fix it when RPC is done
+                 */
+                $this->_frontController->setRouter(new \MVC\Routers\DefaultRouter());
+            } else if($this->router == 'CLIRouter'){
+                /**
+                 * TODO:: fix it when CLI is done
+                 */
+                $this->_frontController->setRouter(new \MVC\Routers\DefaultRouter());
+            } else {
+                $this->_frontController->setRouter(new \MVC\Routers\DefaultRouter());
+            }
+
             $this->_frontController->dispatch();
         }
 
