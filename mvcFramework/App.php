@@ -8,8 +8,9 @@ namespace MVC
         private static $_instance = null;
         private $_config = null;
         private $router = null;
-
+        private $_dbConnections = array();
         private $_frontController = null;
+        private $_session = null;
 
         private function __construct()
         {
@@ -76,7 +77,52 @@ namespace MVC
                 $this->_frontController->setRouter(new \MVC\Routers\DefaultRouter());
             }
 
+            $_sess = $this->_config->app['session'];
+            if($_sess['autostart'])
+            {
+                if($_sess['type'] == 'native')
+                {
+                    $_s = new \MVC\Sessions\NativeSession($_sess['name'], $_sess['lifetime'], $_sess['path'], $_sess['domain'], $_sess['secure']);
+                } else if(($_sess['type'] == 'database'))
+                {
+                    $_s = new \MVC\Sessions\DBSession($_sess['dbConnection'], $_sess['name'], $_sess['dbTable'], $_sess['lifetime'], $_sess['path'], $_sess['domain'], $_sess['secure']);
+                } else
+                {
+                    throw new \Exception('No valid session', 500);
+                }
+                $this->setSession($_s);
+            }
+
             $this->_frontController->dispatch();
+        }
+
+        public function setSession(\MVC\Sessions\ISession $session)
+        {
+            $this->_session = $session;
+        }
+
+        public function getSession()
+        {
+            return $this->_session;
+        }
+
+        public function getDBConnection($connection = 'default')
+        {
+            if(!$connection)
+            {
+                throw new \Exception('No connection identifier provided', 500);
+            }
+            if($this->_dbConnections[$connection])
+            {
+                return $this->_dbConnections[$connection];
+            }
+            $_cnf = $this->getConfig()->database;
+            if(!$_cnf[$connection]){
+                throw new \Exception('No valid connection identificator is provided', 500);
+            }
+            $dbh = new \PDO($_cnf[$connection]['connection_uri'], $_cnf[$connection]['username'], $_cnf[$connection]['password'], $_cnf[$connection]['pdo_options']);
+            $this->_dbConnections[$connection] = $dbh;
+            return $dbh;
         }
 
         /**
@@ -89,6 +135,14 @@ namespace MVC
                 self::$_instance = new \MVC\App();
             }
             return self::$_instance;
+        }
+
+        public function __destruct()
+        {
+            if($this->_session != null)
+            {
+                $this->_session->saveSession();
+            }
         }
     }
 }
