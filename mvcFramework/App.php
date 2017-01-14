@@ -14,6 +14,7 @@ namespace MVC
 
         private function __construct()
         {
+            set_exception_handler(array($this, '_exceptionHandler'));
             \MVC\Loader::registerNamespace('MVC', dirname(__FILE__).DIRECTORY_SEPARATOR);
             \MVC\Loader::registerAutoLoad();
             $this->_config = \MVC\Config::getInstance();
@@ -135,6 +136,30 @@ namespace MVC
                 self::$_instance = new \MVC\App();
             }
             return self::$_instance;
+        }
+
+        public function displayError($error)
+        {
+            try
+            {
+                $view = \MVC\View::getInstance();
+                $view->display('errors.' .$error);
+            } catch (\Exception $exc)
+            {
+                \MVC\Common::headerStatus($error);
+                echo '<h1>'.$error.'</h1>';
+                exit;
+            }
+        }
+
+        public function _exceptionHandler(\Exception $ex)
+        {
+            if($this->_config && $this->_config->app['displayExceptions'] == true)
+            {
+                echo '<pre>'.print_r($ex, true) . '</pre>';
+            } else {
+                $this->displayError($ex->getCode());
+            }
         }
 
         public function __destruct()

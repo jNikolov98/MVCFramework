@@ -60,4 +60,17 @@ class Common
         $input = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $input);
         return $input;
     }
+
+    public static function headerStatus($code)
+    {
+        $codes = array(
+            100 => 'Continue',
+            101 => 'Switch Protocols',
+        );
+        if(!$codes[$code])
+        {
+            $code = 500;
+        }
+        header($_SERVER['SERVER_PROTOCOL'].' '. $statusCode . ' '. $codes[$code], true, $code);
+    }
 }

@@ -7,6 +7,8 @@ class View
     private $viewPath = null;
     private $viewDir = null;
     private $data = array();
+    private $layoutParts = array();
+    private $layoutData = array();
     private $extension = '.php';
     private function __construct()
     {
@@ -43,11 +45,39 @@ class View
         {
             $this->data = array_merge($this->data, $data);
         }
+
+        if(count($this->layoutParts) > 0)
+        {
+            foreach($this->layoutParts as $k => $v)
+            {
+                $r = $this->_includeFile($v);
+                if($r)
+                {
+                    $this->layoutData[$k] = $r;
+                }
+            }
+        }
+
         if($returnAsString)
         {
             return $this->_includeFile($name);
         } else {
             echo $this->_includeFile($name);
+        }
+    }
+
+    public function getLayoutData($name)
+    {
+        return $this->layoutData[$name];
+    }
+
+    public function appendToLayout($key, $template)
+    {
+        if($key && $template)
+        {
+            $this->layoutParts[$key] = $template;
+        } else {
+            throw new \Exception('Layout require valid key and template', 500);
         }
     }
 
